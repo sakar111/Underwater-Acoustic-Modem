@@ -65,6 +65,9 @@ CAMtastic*/
 # Draftsman
 *.PrjPcbDraftsman.Bak*
 
+# Altium preview cache
+__Previews/
+
 # LTspice - Simulation output (regeneratable from .asc/.cir)
 *.raw
 *.log
@@ -91,3 +94,6 @@ SpiceAutomation*/
 .DS_Store
 Thumbs.db
 *.swp
+
+# LTspice - FFT export files
+*.fft
