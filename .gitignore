@@ -1,0 +1,93 @@
+# Altium Designer - Backup and temp files
+*.PcbDoc.Bak*
+*.SchDoc.Bak*
+*.PrjPcb.Bak*
+*.PrjPCB.Bak*
+*~
+*.bak
+History/
+*.OutJob.Bak*
+
+# Altium output/generated folders
+Project Outputs for*/
+Project Logs for*/
+Project Snapshots for*/
+DRC Reports for*/
+Impedance Report for*/
+Advanced Placer Reports for*/
+Assembly Outputs for*/
+Design Rule Checks for*/
+Differences Reports for*/
+Simulation Reports for*/
+Text Files for*/
+
+# Release Managed / CFS-related (cloud/version-controlled workspace files)
+*.PcbLib.Bak*
+*.SchLib.Bak*
+*.LibPkg.Bak*
+*.OutJob.Bak*
+
+# Altium cache/lock files
+*.PcbDoc.lck
+*.SchDoc.lck
+*.PrjPcbStructure
+*.PrjPCBStructure
+~*.*
+
+# Altium local settings / user-specific
+*.PrjPcbCache
+*.PcbDocPreferences
+*_PrjPcbCfg.xml
+*.harnessconfig
+
+# CAM/manufacturing output (regeneratable — keep if you want fab outputs tracked)
+CAMOutputs/
+CAMtastic*/
+*.gbr
+*.g1
+*.g2
+*.g3
+*.gtl
+*.gbl
+*.gto
+*.gbo
+*.gts
+*.gbs
+*.gml
+*.gko
+*.drl
+*.APR_LIB
+
+# 3D model cache
+*.STEP.Bak*
+*.stp.Bak*
+
+# Draftsman
+*.PrjPcbDraftsman.Bak*
+
+# LTspice - Simulation output (regeneratable from .asc/.cir)
+*.raw
+*.log
+*.op.raw
+*.ac.raw
+*.tran.raw
+*.fourX
+
+# LTspice - Backup and temp files
+*.asc.bak
+*.asy.bak
+*.plt.bak
+*~.asc
+*~.asy
+
+# LTspice - Netlist (regeneratable, but some track it — comment out if so)
+*.net
+
+# LTspice - Misc
+SpiceAutomation*/
+*.tmp
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+*.swp
