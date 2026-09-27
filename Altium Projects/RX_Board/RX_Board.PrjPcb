@@ -56,7 +56,7 @@ AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
 AnnotateSuffix=
 AnnotateScope=All
-AnnotateOrder=-1
+AnnotateOrder=0
 DoLibraryUpdate=1
 DoDatabaseUpdate=1
 ClassGenCCAutoEnabled=1
@@ -88,9 +88,10 @@ UniqueId=b3ecf8d5-015f-4f5f-b4eb-f913ef56d883
 Description=JLCPCB Assembly
 AllowFabrication=0
 ParameterCount=0
-VariationCount=2
+VariationCount=3
 Variation1=Designator=J?|UniqueId=\UEEEJSQM|Kind=1|AlternatePart=
 Variation2=Designator=J?|UniqueId=\KFAMOMFL|Kind=1|AlternatePart=
+Variation3=Designator=U?|UniqueId=\FCJLJSYX|Kind=1|AlternatePart=
 ParamVariationCount=0
 
 [Configuration1]
