@@ -83,6 +83,16 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=WLCMSBAC
 
+[ProjectVariant1]
+UniqueId=b3ecf8d5-015f-4f5f-b4eb-f913ef56d883
+Description=JLCPCB Assembly
+AllowFabrication=0
+ParameterCount=0
+VariationCount=2
+Variation1=Designator=J?|UniqueId=\UEEEJSQM|Kind=1|AlternatePart=
+Variation2=Designator=J?|UniqueId=\KFAMOMFL|Kind=1|AlternatePart=
+ParamVariationCount=0
+
 [Configuration1]
 Name=Sources
 ParameterCount=0

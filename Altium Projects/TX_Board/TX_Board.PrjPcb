@@ -44,6 +44,7 @@ CrossRefPorts=3
 CrossRefCrossSheets=1
 CrossRefSheetEntries=0
 CrossRefFollowFromMainSettings=1
+CurrentVariant=JLCPCB Assembly
 
 [Preferences]
 PrefsVaultGUID=
@@ -99,6 +100,20 @@ ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
+
+[ProjectVariant1]
+UniqueId=78272bda-caf4-43f3-a8bb-91eaa69b88a9
+Description=JLCPCB Assembly
+AllowFabrication=0
+ParameterCount=0
+VariationCount=6
+Variation1=Designator=J1|UniqueId=\EGJEBQIN|Kind=1|AlternatePart=
+Variation2=Designator=J2|UniqueId=\ROCJSRKA|Kind=1|AlternatePart=
+Variation3=Designator=C18|UniqueId=\SHMJRARG|Kind=1|AlternatePart=
+Variation4=Designator=C25|UniqueId=\HOOWODKU|Kind=1|AlternatePart=
+Variation5=Designator=MD1|UniqueId=\LJPOSUVQ|Kind=1|AlternatePart=
+Variation6=Designator=P1|UniqueId=\HKQLCKMH|Kind=1|AlternatePart=
+ParamVariationCount=0
 
 [GeneratedDocument1]
 DocumentPath=Project Outputs for TX_Board\Pick Place for TX_Board.csv
