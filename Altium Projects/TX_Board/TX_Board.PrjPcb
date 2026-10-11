@@ -105,80 +105,83 @@ UniqueId=78272bda-caf4-43f3-a8bb-91eaa69b88a9
 Description=JLCPCB Assembly
 AllowFabrication=0
 ParameterCount=0
-VariationCount=6
+VariationCount=5
 Variation1=Designator=J1|UniqueId=\EGJEBQIN|Kind=1|AlternatePart=
 Variation2=Designator=J2|UniqueId=\ROCJSRKA|Kind=1|AlternatePart=
 Variation3=Designator=C18|UniqueId=\SHMJRARG|Kind=1|AlternatePart=
 Variation4=Designator=C25|UniqueId=\HOOWODKU|Kind=1|AlternatePart=
 Variation5=Designator=MD1|UniqueId=\LJPOSUVQ|Kind=1|AlternatePart=
-Variation6=Designator=P1|UniqueId=\HKQLCKMH|Kind=1|AlternatePart=
 ParamVariationCount=0
 
 [GeneratedDocument1]
-DocumentPath=Project Outputs for TX_Board\Pick Place for TX_Board.csv
+DocumentPath=Project Outputs for TX_Board\Design Rule Check - TX_Board.html
 DItemRevisionGUID=
 
 [GeneratedDocument2]
-DocumentPath=Project Outputs for TX_Board\TX_Board.DRR
+DocumentPath=Project Outputs for TX_Board\Pick Place for TX_Board.csv
 DItemRevisionGUID=
 
 [GeneratedDocument3]
-DocumentPath=Project Outputs for TX_Board\TX_Board.EXTREP
+DocumentPath=Project Outputs for TX_Board\TX_Board.DRR
 DItemRevisionGUID=
 
 [GeneratedDocument4]
-DocumentPath=Project Outputs for TX_Board\TX_Board.G1
+DocumentPath=Project Outputs for TX_Board\TX_Board.EXTREP
 DItemRevisionGUID=
 
 [GeneratedDocument5]
-DocumentPath=Project Outputs for TX_Board\TX_Board.G2
+DocumentPath=Project Outputs for TX_Board\TX_Board.G1
 DItemRevisionGUID=
 
 [GeneratedDocument6]
-DocumentPath=Project Outputs for TX_Board\TX_Board.GBL
+DocumentPath=Project Outputs for TX_Board\TX_Board.G2
 DItemRevisionGUID=
 
 [GeneratedDocument7]
-DocumentPath=Project Outputs for TX_Board\TX_Board.GBO
+DocumentPath=Project Outputs for TX_Board\TX_Board.GBL
 DItemRevisionGUID=
 
 [GeneratedDocument8]
-DocumentPath=Project Outputs for TX_Board\TX_Board.GBP
+DocumentPath=Project Outputs for TX_Board\TX_Board.GBO
 DItemRevisionGUID=
 
 [GeneratedDocument9]
-DocumentPath=Project Outputs for TX_Board\TX_Board.GBS
+DocumentPath=Project Outputs for TX_Board\TX_Board.GBP
 DItemRevisionGUID=
 
 [GeneratedDocument10]
-DocumentPath=Project Outputs for TX_Board\TX_Board.GM
+DocumentPath=Project Outputs for TX_Board\TX_Board.GBS
 DItemRevisionGUID=
 
 [GeneratedDocument11]
-DocumentPath=Project Outputs for TX_Board\TX_Board.GTL
+DocumentPath=Project Outputs for TX_Board\TX_Board.GM
 DItemRevisionGUID=
 
 [GeneratedDocument12]
-DocumentPath=Project Outputs for TX_Board\TX_Board.GTO
+DocumentPath=Project Outputs for TX_Board\TX_Board.GTL
 DItemRevisionGUID=
 
 [GeneratedDocument13]
-DocumentPath=Project Outputs for TX_Board\TX_Board.GTP
+DocumentPath=Project Outputs for TX_Board\TX_Board.GTO
 DItemRevisionGUID=
 
 [GeneratedDocument14]
-DocumentPath=Project Outputs for TX_Board\TX_Board.GTS
+DocumentPath=Project Outputs for TX_Board\TX_Board.GTP
 DItemRevisionGUID=
 
 [GeneratedDocument15]
-DocumentPath=Project Outputs for TX_Board\TX_Board.LDP
+DocumentPath=Project Outputs for TX_Board\TX_Board.GTS
 DItemRevisionGUID=
 
 [GeneratedDocument16]
-DocumentPath=Project Outputs for TX_Board\TX_Board.REP
+DocumentPath=Project Outputs for TX_Board\TX_Board.LDP
 DItemRevisionGUID=
 
 [GeneratedDocument17]
+DocumentPath=Project Outputs for TX_Board\TX_Board.REP
+DItemRevisionGUID=
+
+[GeneratedDocument18]
 DocumentPath=Project Outputs for TX_Board\TX_Board.TXT
 DItemRevisionGUID=
 
