@@ -44,6 +44,7 @@ CrossRefPorts=3
 CrossRefCrossSheets=1
 CrossRefSheetEntries=0
 CrossRefFollowFromMainSettings=1
+CurrentVariant=JLCPCB Assembly
 
 [Preferences]
 PrefsVaultGUID=
@@ -139,12 +140,23 @@ UniqueId=78272bda-caf4-43f3-a8bb-91eaa69b88a9
 Description=JLCPCB Assembly
 AllowFabrication=0
 ParameterCount=0
-VariationCount=5
+VariationCount=16
 Variation1=Designator=J1|UniqueId=\EGJEBQIN|Kind=1|AlternatePart=
 Variation2=Designator=J2|UniqueId=\ROCJSRKA|Kind=1|AlternatePart=
 Variation3=Designator=C18|UniqueId=\SHMJRARG|Kind=1|AlternatePart=
 Variation4=Designator=C25|UniqueId=\HOOWODKU|Kind=1|AlternatePart=
 Variation5=Designator=MD1|UniqueId=\LJPOSUVQ|Kind=1|AlternatePart=
+Variation6=Designator=TP2|UniqueId=\VRMPVPBD|Kind=1|AlternatePart=
+Variation7=Designator=P1|UniqueId=\GWOOYYTA|Kind=1|AlternatePart=
+Variation8=Designator=TP3|UniqueId=\OJJOJBVN|Kind=1|AlternatePart=
+Variation9=Designator=TP4|UniqueId=\LNHPXUJT|Kind=1|AlternatePart=
+Variation10=Designator=TP1|UniqueId=\QGOIIDTU|Kind=1|AlternatePart=
+Variation11=Designator=TP5|UniqueId=\SGGSTOLM|Kind=1|AlternatePart=
+Variation12=Designator=TP9|UniqueId=\LZCAGFQT|Kind=1|AlternatePart=
+Variation13=Designator=TP8|UniqueId=\FHQDGNHP|Kind=1|AlternatePart=
+Variation14=Designator=TP10|UniqueId=\IQPEBIPI|Kind=1|AlternatePart=
+Variation15=Designator=TP7|UniqueId=\MXTKQBHF|Kind=1|AlternatePart=
+Variation16=Designator=TP6|UniqueId=\KVEVSCYV|Kind=1|AlternatePart=
 ParamVariationCount=0
 
 [GeneratedDocument1]
