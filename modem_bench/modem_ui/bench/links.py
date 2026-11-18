@@ -46,15 +46,19 @@ class LineLink(QObject):
         raise NotImplementedError         # pragma: no cover - interface
 
 
-def list_ports(vid: int = TEENSY_VID) -> list[tuple[str, str, bool]]:
-    """(port name, label, is_teensy) for every serial port."""
+def list_ports(vid: int = TEENSY_VID) -> list[tuple[str, str, bool, str]]:
+    """(port name, label, is_teensy, serial number) for every serial port.
+
+    Both Teensys report VID 0x16C0, so the label shows the USB serial number to tell the TX and
+    RX boards apart (spec RX §6.1)."""
     out = []
     for p in QSerialPortInfo.availablePorts():
         is_teensy = p.hasVendorIdentifier() and p.vendorIdentifier() == vid
+        sn = p.serialNumber() or ""
         label = f"{p.portName()}  —  {p.description() or 'serial port'}"
         if is_teensy:
-            label += "  (Teensy)"
-        out.append((p.portName(), label, is_teensy))
+            label += "  (Teensy" + (f" SN {sn}" if sn else "") + ")"
+        out.append((p.portName(), label, is_teensy, sn))
     return out
 
 

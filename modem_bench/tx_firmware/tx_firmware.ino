@@ -39,6 +39,8 @@
 //    THERMSTOP <s>              -> 0 .. 3600, auto-stop after s seconds above
 //                                  the continuous thermal guideline (0 = off)
 //    POTREAD                    -> OK POTREAD <code> (reads the wiper over I2C)
+//    SYNC ON | SYNC OFF         -> pin 2 pulses HIGH for 16 us at every burst start
+//                                  (CONT: once at START), for the RX delay measurement
 //    START / STOP
 //    STATUS
 // =====================================================================
@@ -46,7 +48,7 @@
 #include <Wire.h>
 #include <math.h>
 
-#define TXFW_VERSION "1.1"
+#define TXFW_VERSION "1.2"
 
 // ---------------- pins (TX schematic, spec §2.3) ----------------
 const int PIN_DAC_CS = 28;   // SPI1_CS (plain GPIO, R18 10k pull-up to board 3V3)
@@ -56,6 +58,7 @@ const int PIN_SCL2   = 24;   // I2C2_SCL (4.7k pull-up to board +3V3)
 const int PIN_SDA2   = 25;   // I2C2_SDA (4.7k pull-up to board +3V3)
 const int PIN_LED_TX = 3;    // LED_TX
 const int PIN_LED_HB = 8;    // LED_HB (heartbeat)
+const int PIN_SYNC_OUT = 2;  // optional TX->RX sync wire (no net on the TX PCB: always safe to drive)
 
 // ---------------- hardware constants ----------------
 const float    FS_HZ          = 500000.0f;  // DAC update rate
@@ -93,6 +96,9 @@ volatile bool     burstMode  = false;
 volatile uint32_t burstOnN   = 0;   // samples
 volatile uint32_t burstPerN  = 0;   // samples
 volatile uint32_t burstCnt   = 0;
+volatile bool     syncEnable = false;
+volatile bool     syncPending = false; // CONT mode: one pulse at START
+volatile uint8_t  syncCnt    = 0;      // DAC ticks left in the current pulse
 
 // ---------------- settings (main loop only) ----------------
 bool     armed        = false;
@@ -198,10 +204,16 @@ String thermalWarning() {
 // =====================================================================
 //  500 kHz sample ISR  (no floats, no Serial, no I2C)
 // =====================================================================
+static inline void syncPulse() {         // 8 DAC ticks = 16 us, seen by the RX at 2.5 us sampling
+  if (syncEnable) { digitalWriteFast(PIN_SYNC_OUT, HIGH); syncCnt = 8; }
+}
+
 void dacTick() {
+  if (syncCnt && --syncCnt == 0) digitalWriteFast(PIN_SYNC_OUT, LOW);
   int32_t tgt = running ? ampSet : 0;
+  if (running && !burstMode && syncPending) { syncPending = false; syncPulse(); }
   if (running && burstMode) {
-    if (burstCnt == 0) phase = 0;        // every burst starts at the same phase
+    if (burstCnt == 0) { phase = 0; syncPulse(); }   // every burst starts at the same phase
     if (burstCnt >= burstOnN) tgt = 0;
     if (++burstCnt >= burstPerN) burstCnt = 0;
   }
@@ -356,6 +368,7 @@ String statusLine() {
   s += " cal=";      s += String(calFactor, 3);
   s += " sweep=";    s += sweepOn ? 1 : 0;
   s += " tstop=";    s += (unsigned long)thermalStopS;
+  s += " sync=";     s += syncEnable ? 1 : 0;
   return s;
 }
 
@@ -376,7 +389,7 @@ void handle(String line) {
 
   if (c == "PING")         out("PONG TXFW " TXFW_VERSION);
   else if (c == "VERSION") out("OK VERSION TXFW " TXFW_VERSION " fs=500000 dac=DAC8830 pot=AD5245");
-  else if (c == "HELP")    out("OK commands: PING VERSION ARM DISARM FREQ AMP POT LIMIT CAL MODE SWEEP THERMSTOP POTREAD START STOP STATUS");
+  else if (c == "HELP")    out("OK commands: PING VERSION ARM DISARM FREQ AMP POT LIMIT CAL MODE SWEEP THERMSTOP POTREAD SYNC START STOP STATUS");
   else if (c == "STATUS")  out(statusLine());
   else if (c == "ARM")     out(doArm());
   else if (c == "DISARM")  out(doDisarm());
@@ -456,6 +469,12 @@ void handle(String line) {
     thermalStopS = (uint32_t)sec;
     out(String("OK THERMSTOP ") + String(sec));
   }
+  else if (c == "SYNC") {
+    String m(a1 ? a1 : "");
+    if (m == "ON")       { syncEnable = true;  out("OK SYNC ON"); }
+    else if (m == "OFF") { syncEnable = false; out("OK SYNC OFF"); }
+    else { out("ERR SYNC needs ON or OFF"); return; }
+  }
   else if (c == "POTREAD") {
     if (!armed) { out("ERR NOTARMED"); return; }
     uint8_t d = 0;
@@ -468,6 +487,7 @@ void handle(String line) {
     if (!running) {
       if (burstMode) applyBurst(false);
       if (sweepOn) { sweepT0 = micros(); applyFreq(); }
+      syncPending = true;
     }
     setRunning(true);
     out("OK START");
@@ -488,6 +508,7 @@ void setup() {
   releasePins();                         // never drive the board before ARM
   pinMode(PIN_LED_TX, OUTPUT); digitalWriteFast(PIN_LED_TX, LOW);
   pinMode(PIN_LED_HB, OUTPUT); digitalWriteFast(PIN_LED_HB, LOW);
+  pinMode(PIN_SYNC_OUT, OUTPUT); digitalWriteFast(PIN_SYNC_OUT, LOW);
   for (int i = 0; i < 1024; i++)
     sineTab[i] = (int16_t)lroundf(32767.0f * sinf(K_TWO_PI * i / 1024.0f));
   applyFreq();

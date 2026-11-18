@@ -12,7 +12,7 @@ import math
 from .tx_model import (ABS_MAX_VPP, CAL_MAX, CAL_MIN, MAX_DAC_MVPK, THERMAL_FVPP,
                        est_vpp)
 
-VERSION = "1.1"
+VERSION = "1.2"
 _EPS = 1e-3
 _THERMAL_WARN = ("WARN THERMAL continuous f*Vpp above ~2.3e6: power amps may overheat; "
                  "use BURST or lower level")
@@ -57,6 +57,7 @@ class SimTxTeensy:
         self.sweep_on = False
         self.sweep = (20000.0, 90000.0, 100)
         self.thermal_stop_s = 60
+        self.sync_on = False
         self._thermal_active = False
         self._thermal_t0 = 0
         self._last_chk = 0
@@ -154,7 +155,8 @@ class SimTxTeensy:
         return (f"STATUS armed={int(self.armed)} run={int(self.running)} freq={_lround(self.freq)} "
                 f"amp={_lround(self.amp)} pot={self.pot} mode={'BURST' if self.burst else 'CONT'} "
                 f"on_us={self.on_us} per_us={self.per_us} est={self.est():.2f} limit={self.limit:.1f} "
-                f"power={power} cal={self.cal:.3f} sweep={int(self.sweep_on)} tstop={self.thermal_stop_s}")
+                f"power={power} cal={self.cal:.3f} sweep={int(self.sweep_on)} tstop={self.thermal_stop_s} "
+                f"sync={int(self.sync_on)}")
 
     def _arm(self) -> str:
         if self.armed:
@@ -198,7 +200,7 @@ class SimTxTeensy:
             out.append(f"OK VERSION TXFW {VERSION} fs=500000 dac=DAC8830 pot=AD5245")
         elif c == "HELP":
             out.append("OK commands: PING VERSION ARM DISARM FREQ AMP POT LIMIT CAL MODE SWEEP "
-                       "THERMSTOP POTREAD START STOP STATUS")
+                       "THERMSTOP POTREAD SYNC START STOP STATUS")
         elif c == "STATUS":
             out.append(self.status_line())
         elif c == "ARM":
@@ -291,6 +293,15 @@ class SimTxTeensy:
                 return err("ERR THERMSTOP out of range 0..3600")
             self.thermal_stop_s = s
             out.append(f"OK THERMSTOP {s}")
+        elif c == "SYNC":
+            if a1 == "ON":
+                self.sync_on = True
+                out.append("OK SYNC ON")
+            elif a1 == "OFF":
+                self.sync_on = False
+                out.append("OK SYNC OFF")
+            else:
+                return err("ERR SYNC needs ON or OFF")
         elif c == "POTREAD":
             if not self.armed:
                 return err("ERR NOTARMED")

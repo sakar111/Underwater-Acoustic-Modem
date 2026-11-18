@@ -1,13 +1,15 @@
 """Main window: one tab per board + a shared serial log."""
 from __future__ import annotations
 
-from PySide6.QtCore import QSettings
+from PySide6.QtCore import QSettings, QTimer
 from PySide6.QtGui import QAction, QFont, QKeySequence, QShortcut
 from PySide6.QtWidgets import (QLabel, QMainWindow, QMessageBox, QPlainTextEdit, QTabWidget,
                                QVBoxLayout, QWidget)
 
 from .links import SimTxLink
-from .rx_tab import RxTab
+from .rx_link import SimRxLink
+from .rx_tab import POWER_PROCEDURE, RxTab
+from .sim_rx import BurstConfig, SimRxDevice
 from .tx_tab import TxTab
 
 BENCH_RULES = """\
@@ -38,10 +40,10 @@ the calibration factor.</p>
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, sim: bool = False, settings: QSettings | None = None):
+    def __init__(self, sim: bool = False, settings: QSettings | None = None, sim_realtime: bool = True):
         super().__init__()
         self.setWindowTitle("Acoustic Modem Bench")
-        self.resize(980, 860)
+        self.resize(1500, 960)
         self.settings = settings if settings is not None else QSettings("UNR-AcousticModem", "ModemBench")
 
         central = QWidget()
@@ -50,8 +52,11 @@ class MainWindow(QMainWindow):
 
         self.tabs = QTabWidget()
         self.sim_tx = SimTxLink(parent=self) if sim else None
+        self.sim_rx = SimRxLink(SimRxDevice(burst=BurstConfig()), parent=self, realtime=sim_realtime) if sim else None
         self.tx = TxTab(sim_link=self.sim_tx)
-        self.rx = RxTab()
+        self.rx = RxTab(sim_link=self.sim_rx, tx_state=self.tx.tx_state)
+        self.tx.port.set_peer(self.rx.port)
+        self.rx.port.set_peer(self.tx.port)
         self.tabs.addTab(self.tx, "TX")
         self.tabs.addTab(self.rx, "RX")
         root.addWidget(self.tabs, 1)
@@ -74,14 +79,42 @@ class MainWindow(QMainWindow):
 
         # menu + shortcuts
         m_help = self.menuBar().addMenu("&Help")
-        act = QAction("Bench rules…", self)
+        act = QAction("Bench rules (TX)…", self)
         act.triggered.connect(self.show_help)
         m_help.addAction(act)
+        act = QAction("RX power procedure…", self)
+        act.triggered.connect(lambda: QMessageBox.information(self, "RX power procedure", POWER_PROCEDURE))
+        m_help.addAction(act)
         self.sc_stop = QShortcut(QKeySequence("Esc"), self)
-        self.sc_stop.activated.connect(self.tx.on_stop)
+        self.sc_stop.activated.connect(self.stop_all)
+
+        if sim:                      # the simulated RX hears what the simulated TX sends
+            self._sim_follow = QTimer(self)
+            self._sim_follow.setInterval(250)
+            self._sim_follow.timeout.connect(self._follow_tx_sim)
+            self._sim_follow.start()
 
         self.tx.load_settings(self.settings)
         self.rx.load_settings(self.settings)
+
+    def stop_all(self):
+        """Esc: TX STOP + RX STREAM OFF / ABORT."""
+        self.tx.on_stop()
+        self.rx.on_stop()
+
+    def _follow_tx_sim(self):
+        """--sim: drive the fake RX signal from the simulated TX settings (0.5 m of water)."""
+        st = self.tx.tx_state()
+        if not (st.get("connected") and self.tx.port.link is self.sim_tx):
+            return
+        dev = self.sim_rx.dev
+        b = dev.burst or BurstConfig()
+        b.freq_hz = float(st["freq"])
+        b.continuous = st["mode"] != "BURST"
+        b.on_us, b.period_us = float(st["on_us"]), float(st["per_us"])
+        b.amp_v = 2e-4 * float(st["est_vpp"]) if st.get("running") else 0.0   # ~0.5 mVpp per 2.5 Vpp
+        b.sync_wire = bool(st.get("sync"))
+        dev.burst = b
 
     def show_help(self):
         QMessageBox.information(self, "Bench rules", BENCH_RULES)

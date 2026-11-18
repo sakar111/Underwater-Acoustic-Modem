@@ -2,10 +2,13 @@
 
     python tests/run_all.py
 
-1. builds tx_firmware.ino against the host stubs (g++) and runs sim_main (waveform,
-   bursts, limits, ARM/DISARM, back-power, watchdog checks)
-2. Python unit tests: level model + safe ordering, fake-vs-firmware cross-check,
-   offscreen app tests against the simulated Teensy (needs PySide6)
+1. builds tx_firmware.ino and rx_firmware.ino against their host stubs (g++) and runs the
+   scenario checks (TX: waveform, bursts, limits, ARM/DISARM, watchdog, SYNC output;
+   RX: power check, self-test, streaming, triggered captures, overflow, watchdogs). The RX run
+   writes its byte streams to build/rx_out_*.bin for test_rx_firmware_stream.
+2. Python unit tests: TX level model + safe ordering, fake-vs-firmware cross-checks (TX and RX),
+   RX protocol / gain model / analysis / save-load, RX firmware streams parsed by the app parser,
+   and offscreen app tests against the simulated Teensys (needs PySide6, pyqtgraph, numpy).
 """
 import os
 import shutil
@@ -20,31 +23,43 @@ import _paths  # noqa: E402
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 
-def firmware_tests() -> bool:
+def build_and_run(name: str, stub_dir: str, src: str, *args) -> bool:
     gxx = shutil.which("g++")
-    if not gxx:
-        print("!! g++ not found: skipping the firmware host build (install MSYS2 / MinGW-w64)")
+    exe = os.path.join(_paths.BUILD_DIR, name + (".exe" if os.name == "nt" else ""))
+    subprocess.run([gxx, "-std=c++17", "-O1", "-Wall", "-Wextra", "-I", os.path.join(HERE, stub_dir),
+                    "-o", exe, os.path.join(HERE, src)], check=True)
+    return subprocess.run([exe, *args]).returncode == 0
+
+
+def firmware_tests() -> bool:
+    if not shutil.which("g++"):
+        print("!! g++ not found: skipping the firmware host builds (install MSYS2 / MinGW-w64)")
         return True
     os.makedirs(_paths.BUILD_DIR, exist_ok=True)
-    exe = os.path.join(_paths.BUILD_DIR, "sim.exe" if os.name == "nt" else "sim")
-    subprocess.run([gxx, "-std=c++17", "-O1", "-Wall", "-Wextra", "-I",
-                    os.path.join(HERE, "host_stubs"), "-o", exe,
-                    os.path.join(HERE, "sim_main.cpp")], check=True)
-    return subprocess.run([exe]).returncode == 0
+    ok = build_and_run("sim", "host_stubs", "sim_main.cpp")
+    ok = build_and_run("rx_sim", "host_stubs_rx", "rx_sim_main.cpp", _paths.BUILD_DIR) and ok
+    return ok
 
 
 def python_tests() -> bool:
-    suite = unittest.defaultTestLoader.loadTestsFromNames(["test_tx_model", "test_fake_vs_firmware"])
+    names = ["test_tx_model", "test_fake_vs_firmware", "test_rx_fake_vs_firmware", "test_rx_firmware_stream"]
+    try:
+        import numpy  # noqa: F401
+        names += ["test_rx_protocol", "test_rx_model", "test_rx_analysis"]
+    except ImportError:
+        print("!! numpy not installed: skipping the RX Python tests")
+    suite = unittest.defaultTestLoader.loadTestsFromNames(names)
     try:
         import PySide6  # noqa: F401
-        suite.addTests(unittest.defaultTestLoader.loadTestsFromName("test_ui"))
+        import pyqtgraph  # noqa: F401
+        suite.addTests(unittest.defaultTestLoader.loadTestsFromNames(["test_ui", "test_rx_ui"]))
     except ImportError:
-        print("!! PySide6 not installed: skipping the app tests")
+        print("!! PySide6 / pyqtgraph not installed: skipping the app tests")
     return unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
 
 
 if __name__ == "__main__":
-    print("== firmware (host build) ==", flush=True)
+    print("== firmware (host builds) ==", flush=True)
     ok = firmware_tests()
     print("\n== python ==")
     ok = python_tests() and ok

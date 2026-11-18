@@ -26,6 +26,7 @@ class TxTab(QWidget):
         self.power: bool | None = None
         self.fw_version = ""
         self.identified = False            # PONG TXFW received on this connection
+        self.sync_supported = False        # TX firmware >= 1.2 reports sync= in STATUS
         self.fw_level: Level | None = None   # firmware level state after everything we sent
         self.sent: dict[str, str] = {}       # last non-level commands sent (FREQ, MODE, ...)
         self._level_seq = 0                  # bumps on every level command sent
@@ -179,11 +180,17 @@ class TxTab(QWidget):
                                   "thermal guideline (f × Vpp > 2.3e6). 0 = off.")
         self.lbl_fw = QLabel("")
         self.lbl_fw.setStyleSheet(f"color:{GREY}")
+        self.cb_sync = QCheckBox("SYNC output")
+        self.cb_sync.setToolTip("TX Teensy pin 2 pulses HIGH for 16 µs at every burst start (CONT: once at "
+                                "Start). Wire it to RX Teensy pin 2 through 2.2 kΩ for delay measurements. "
+                                "Needs TX firmware 1.2.")
+        self.cb_sync.setVisible(False)
         l_run.addWidget(self.btn_start)
         l_run.addWidget(self.btn_stop)
         l_run.addWidget(self.lbl_run)
         l_run.addWidget(QLabel("Thermal auto-stop"))
         l_run.addWidget(self.thermstop)
+        l_run.addWidget(self.cb_sync)
         l_run.addStretch(1)
         l_run.addWidget(self.lbl_fw)
         root.addWidget(g_run)
@@ -211,6 +218,7 @@ class TxTab(QWidget):
             w.valueChanged.connect(self.on_edit)
         self.rb_cont.toggled.connect(self.on_edit)
         self.cb_sweep.toggled.connect(self.on_edit)
+        self.cb_sync.toggled.connect(self.on_edit)
 
         self.poll = QTimer(self)
         self.poll.setInterval(1000)
@@ -333,6 +341,8 @@ class TxTab(QWidget):
                 "THERMSTOP": f"THERMSTOP {self.thermstop.value()}"}
         if self.burst_ok():
             want["MODE"] = self.mode_cmd()
+        if self.sync_supported:
+            want["SYNC"] = "SYNC ON" if self.cb_sync.isChecked() else "SYNC OFF"
         for key, cmd in want.items():
             if self.sent.get(key) != cmd:
                 self.send(cmd)
@@ -346,6 +356,8 @@ class TxTab(QWidget):
         self.sent = {}
         self.identified = False
         self.fw_version = ""
+        self.sync_supported = False
+        self.cb_sync.setVisible(False)
         self._ping_tries = 0
         self._status_fifo.clear()
         self.show_fw_msg("", GREY)
@@ -378,6 +390,10 @@ class TxTab(QWidget):
     def _on_identified(self):
         self.identified = True
         self.show_fw_msg("", GREY)
+        sn = self.port.serial_number(self.port.open_port_name())
+        if sn:
+            self.port.preferred_serial = sn
+        self.port.set_board_text(f"<b style='color:{GREEN}'>TX board</b> {self.fw_version}")
         self.lbl_power.setText("Connected — checking board…")
         self.send("POT 255")                 # start from minimum gain (spec §6.3)
         self.push_changes()                  # unknown state -> AMP 0 first, amplitude last
@@ -430,7 +446,9 @@ class TxTab(QWidget):
                 if line.startswith("PONG TXFW"):
                     self._on_identified()
                 else:
-                    self.show_fw_msg(f"This device is not the TX firmware ({line}); nothing sent.", RED)
+                    who = " This is the RX board's Teensy (wrong port)." if line.startswith("PONG RXFW") else ""
+                    msg = f"This device is not the TX firmware ({line}).{who} Port closed; nothing sent."
+                    QTimer.singleShot(0, lambda m=msg: (self.port.disconnect_port(), self.show_fw_msg(m, RED)))
         elif line.startswith("ERR"):
             self.show_fw_msg(f"Teensy: {line}", RED)
             self.sent = {}                   # resend everything on the next change
@@ -452,6 +470,10 @@ class TxTab(QWidget):
             self.fw_level = Level.from_status(st)
         self.armed = st.get("armed") == "1"
         self.running = st.get("run") == "1"
+        if "sync" in st and not self.sync_supported:     # TX firmware >= 1.2 (RX spec Appendix C)
+            self.sync_supported = True
+            self.cb_sync.setVisible(True)
+            self.push_changes()
         self.power = st.get("power") == "1"
         if self.armed:
             self.lbl_power.setText(f"<b style='color:{GREEN}'>ARMED</b> — board powered, DAC and pot active")
@@ -464,6 +486,16 @@ class TxTab(QWidget):
         ver = f"TXFW {self.fw_version.split()[-1]}  ·  " if self.fw_version else ""
         self.lbl_fw.setText(f"{ver}firmware est {st.get('est', '?')} Vpp, limit {st.get('limit', '?')}")
         self.update_buttons()
+
+    # ==================================================================== for the RX tab
+    def tx_state(self) -> dict:
+        """Read-only TX information for the RX tab (delay template, capture metadata)."""
+        burst = self.rb_burst.isChecked()
+        return {"connected": self.port.is_open() and self.identified, "armed": self.armed,
+                "running": self.running, "freq": self.freq.value(), "mode": "BURST" if burst else "CONT",
+                "on_us": int(round(self.burst_on.value() * 1000)), "per_us": int(round(self.burst_per.value() * 1000)),
+                "est_vpp": round(self.estimate(), 3), "sweep": self.cb_sweep.isChecked(),
+                "sync": self.sync_supported and self.cb_sync.isChecked(), "firmware": self.fw_version}
 
     # ==================================================================== settings
     def save_settings(self, s: QSettings):
@@ -482,6 +514,8 @@ class TxTab(QWidget):
         s.setValue("sweep_f2", self.sweep_f2.value())
         s.setValue("sweep_ms", self.sweep_ms.value())
         s.setValue("thermstop", self.thermstop.value())
+        s.setValue("sync", self.cb_sync.isChecked())
+        s.setValue("serial", self.port.preferred_serial)
         s.endGroup()
 
     def load_settings(self, s: QSettings):
@@ -506,8 +540,11 @@ class TxTab(QWidget):
             self.sweep_f2.setValue(get("sweep_f2", 90000, int))
             self.sweep_ms.setValue(get("sweep_ms", 100, int))
             self.thermstop.setValue(get("thermstop", 60, int))
+            self.cb_sync.setChecked(get("sync", False, bool))
+            self.port.preferred_serial = get("serial", "", str)
+            self.port.refresh_ports()
             port = s.value("port", "")
-            if port:
+            if port and not self.port.serial_number():
                 self.port.select_port(str(port))
         finally:
             s.endGroup()

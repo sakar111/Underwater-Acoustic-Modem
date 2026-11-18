@@ -238,6 +238,54 @@ int main() {
   CHECK(g_backpower == bpBefore, "emergency release drives nothing");
   r = cmd("ARM");        CHECK(starts(r, "ERR NOPOWER"), "%s", r.c_str());
 
+  // ---- 16. SYNC output (RX spec Appendix C): pin 2 pulses 8 ticks at every burst start ----
+  g_power = true;
+  CHECK(g_pinmode[2] == OUTPUT && g_pins[2] == LOW, "SYNC pin is an output, low");
+  r = cmd("ARM");        CHECK(r == "OK ARMED", "%s", r.c_str());
+  r = cmd("SYNC ON");    CHECK(r == "OK SYNC ON", "%s", r.c_str());
+  r = cmd("STATUS");     CHECK(has(r, " sync=1"), "%s", r.c_str());
+  r = cmd("MODE BURST 1000 10000");
+  r = cmd("START");
+  {
+    std::vector<int> rise, high;
+    int prev = g_pins[2], run = 0;
+    g_dac.clear();
+    for (int i = 0; i < 20000; i++) {
+      dacTick();
+      int p = g_pins[2];
+      if (p && !prev) rise.push_back(i);
+      if (p) run++;
+      else if (run) { high.push_back(run); run = 0; }
+      prev = p;
+    }
+    CHECK(rise.size() == 4, "4 sync pulses in 40 ms, got %zu", rise.size());
+    bool spacing = rise.size() == 4;
+    for (size_t k = 1; k < rise.size(); k++) if (rise[k] - rise[k - 1] != 5000) spacing = false;
+    CHECK(spacing && rise[0] == 0, "pulses every 5000 ticks starting at the burst start");
+    bool width = !high.empty();
+    for (int w : high) if (w != 8) width = false;
+    CHECK(width, "pulse width 8 ticks (16 us)");
+    CHECK(abs((int)g_dac[0] - 32768) < 200, "pulse coincides with the burst start (phase 0, ramp)");
+  }
+  r = cmd("STOP");
+  r = cmd("MODE CONT");
+  r = cmd("START");
+  {
+    int pulses = 0, prev = g_pins[2];
+    for (int i = 0; i < 5000; i++) { dacTick(); if (g_pins[2] && !prev) pulses++; prev = g_pins[2]; }
+    CHECK(pulses == 1, "CONT: one pulse at START, got %d", pulses);
+  }
+  r = cmd("SYNC OFF");   CHECK(r == "OK SYNC OFF", "%s", r.c_str());
+  r = cmd("STOP");
+  r = cmd("START");
+  {
+    int pulses = 0;
+    for (int i = 0; i < 2000; i++) { dacTick(); if (g_pins[2]) pulses++; }
+    CHECK(pulses == 0, "no pulse with SYNC OFF");
+  }
+  r = cmd("SYNC 1");     CHECK(starts(r, "ERR SYNC"), "%s", r.c_str());
+  r = cmd("DISARM");
+
   printf("\nfirmware host tests: %d passed, %d failed\n", g_pass, g_fail);
   return g_fail ? 1 : 0;
 }
