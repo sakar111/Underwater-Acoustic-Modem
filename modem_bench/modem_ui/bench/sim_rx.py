@@ -490,7 +490,7 @@ class SimRxDevice:
         if c == "PING":
             return L(f"PONG TXFW 1.1" if self.pong_as_tx else f"PONG RXFW {self.version}")
         if c == "VERSION":
-            return L(f"OK VERSION RXFW {self.version} fs=400000 adc=ADC121S101 pot=AD5245 shift=1")
+            return L(f"OK VERSION RXFW {self.version} fs=400000 adc=ADC121S101 pot=AD5245 shift=0")
         if c == "HELP":
             return L("OK commands: PING VERSION ARM DISARM STATUS GAIN POT POTREAD TRIG CAPTURE ABORT "
                      "STREAM RAW STATS")
@@ -606,7 +606,7 @@ class SimRxDevice:
             for i in range(k):
                 if self.board_powered:
                     self._conv += 1
-                    parts.append(f"{(int(w[i]) << 1) | (self._conv & 1):04X}")
+                    parts.append(f"{int(w[i]):04X}")
                 else:
                     parts.append("0000")
             self._start_timer()

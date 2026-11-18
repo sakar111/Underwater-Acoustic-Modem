@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
   g_power = true;
   g_wrongAlign = true;
   r = cmd("ARM");
-  CHECK(starts(r, "ERR ADC self-test failed: mean=1025 frame_errors=0"), "%s", r.c_str());
+  CHECK(starts(r, "ERR ADC self-test failed: mean=5 frame_errors=64"), "%s", r.c_str());
   CHECK(pinsReleased() && !adcTimer.on && !SPI1.begun && !Wire2.begun, "released after self-test failure");
   g_wrongAlign = false;
 
@@ -109,14 +109,14 @@ int main(int argc, char** argv) {
   r = cmd("POT -1");     CHECK(starts(r, "ERR POT out of range"), "%s", r.c_str());
   r = cmd("POT");        CHECK(starts(r, "ERR POT needs"), "%s", r.c_str());
   r = cmd("RAW 4");
-  CHECK(starts(r, "OK RAW 100"), "%s", r.c_str());
+  CHECK(starts(r, "OK RAW 0802"), "%s", r.c_str());
   {
     bool ok = true;
     unsigned v;
     const char* p = r.c_str() + 6;
     int cnt = 0;
-    while (sscanf(p, " %4x", &v) == 1) { if (v != 0x1004 && v != 0x1005) ok = false; cnt++; p += 5; }
-    CHECK(ok && cnt == 4, "RAW words 0x1004/0x1005: %s", r.c_str());
+    while (sscanf(p, " %4x", &v) == 1) { if (v != 0x0802) ok = false; cnt++; p += 5; }
+    CHECK(ok && cnt == 4, "RAW words 0x0802: %s", r.c_str());
   }
   CHECK(adcTimer.on, "timer restarted after RAW");
   r = cmd("RAW 17");     CHECK(starts(r, "ERR RAW"), "%s", r.c_str());

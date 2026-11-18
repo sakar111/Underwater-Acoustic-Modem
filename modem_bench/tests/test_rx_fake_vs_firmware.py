@@ -145,7 +145,7 @@ class TestRxFakeMatchesFirmware(unittest.TestCase):
         diffs = [f"{cmd[:30]!r}:\n   fw  : {a}\n   fake: {b}" for cmd, a, b in zip(lines, fw, fake) if a != b]
         self.assertFalse(diffs, "fake differs from firmware:\n" + "\n".join(diffs))
         joined = "\n".join(fw)
-        for needle in ("ERR NOPOWER", "OK ARMED mid=2050", "OK RAW 1005 1004 1005 1004", "EVT TRIG id=2",
+        for needle in ("ERR NOPOWER", "OK ARMED mid=2050", "OK RAW 0802 0802 0802 0802", "EVT TRIG id=2",
                        "EVT CAPDONE id=2 n=5000 pre=100", "[frames=", "WARN POTRESET", "WARN POWERLOST",
                        "ERR BUSY", "ERR line too long", "per_min_ns=2500", "OK DISARMED"):
             self.assertIn(needle, joined)

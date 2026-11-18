@@ -56,8 +56,8 @@ const int PIN_LED_HB   = 8;    // heartbeat
 const int PIN_SYNC     = 2;    // optional TX->RX sync wire (Teensy pin only)
 
 // ---------------- hardware / protocol constants ----------------
-const int      ADC_SHIFT   = 1;                                   // VERIFY AT BRING-UP (RAW, §3.2)
-const uint16_t ADC_ZMASK   = (uint16_t)(0xFFFFu << (12 + ADC_SHIFT));   // = 0xE000
+const int      ADC_SHIFT   = 0;                                   // confirmed at bring-up 2026-11-18: idle raw ≈ 0x0800, TP8 = 2.506 V
+const uint16_t ADC_ZMASK   = (uint16_t)(0xFFFFu << (12 + ADC_SHIFT));   // = 0xF000
 const uint8_t  POT_ADDR    = 0x2C;                                // AD5245, AD0 = GND
 const uint32_t RING_N      = 65536;                               // 164 ms at 400 kSPS
 const uint32_t RING_MASK   = RING_N - 1;

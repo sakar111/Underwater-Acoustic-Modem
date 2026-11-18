@@ -4,7 +4,7 @@
 //   g_power        board 12 V: when false the AD5245 NACKs and the ADC reads 0
 //   g_sig(k)       ADC code of sample k        g_sync(k)  SYNC pin level of sample k
 //   g_k            sample index of the conversion in progress (set by the test driver = head)
-//   g_wrongAlign   ADC returns code << 0 instead of the real mode-0 alignment code << 1
+//   g_wrongAlign   ADC returns code << 1 instead of the real mode-0 alignment code << 0 (measured on the board)
 //   Serial         collects every byte written (lines and frames); dtr() is controllable
 #pragma once
 #include <cstdint>
@@ -89,7 +89,7 @@ struct SPIClass {
     if (code < 0) code = 0;
     if (code > 4095) code = 4095;
     conv++;
-    return g_wrongAlign ? (uint16_t)code : (uint16_t)((code << 1) | (conv & 1));
+    return g_wrongAlign ? (uint16_t)((code << 1) | (conv & 1)) : (uint16_t)code;
   }
 };
 extern SPIClass SPI1;

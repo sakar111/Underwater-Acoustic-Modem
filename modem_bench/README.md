@@ -133,7 +133,8 @@ Protocol, safety logic and behaviour are kept; these were added or fixed:
 - Nothing has run on real boards yet. TX: follow TX spec §9.2; watch the ISR timing at 500 kHz
   with SPI at 20 MHz (TP7 staircase period 2 µs) and that the I2C watchdog gives no false disarms.
 - RX: follow RX spec §9.2. The items marked **VERIFY AT BRING-UP** are not settled by the stubs:
-  - `ADC_SHIFT = 1` (mode-0 bit alignment): idle `RAW 8` words must be ≈ `0x1000`, bits 15..13 = 0;
+  - ~~`ADC_SHIFT`~~ settled on the board (2026-11-18): the first ARM gave `mean=1024` with TP8 = 2.506 V, so the
+    shift is **0**, not 1 as the spec assumed. Idle `RAW 8` words ≈ `0x0800`, bits 15..12 = 0;
   - SCLK actually lands in 10–16 MHz for the requested 12 MHz;
   - real ISR jitter (`STATS` after 10 min: per_min/per_max within 2500 ± 25 ns, isr_max < 2000 ns;
     the stub reports exactly 2500 / 1250 ns);
