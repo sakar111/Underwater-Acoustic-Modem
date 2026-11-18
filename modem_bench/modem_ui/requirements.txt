@@ -1,0 +1,3 @@
+PySide6>=6.5
+# pyqtgraph   (add when the RX tab is built)
+# pyserial    (optional: only for tests/fake_teensy.py --port, serving a virtual COM port)

@@ -8,6 +8,8 @@
 History/
 *.OutJob.Bak*
 
+AHOI/
+
 # Altium output/generated folders
 Project Outputs for*/
 Project Logs for*/
@@ -97,3 +99,8 @@ Thumbs.db
 
 # LTspice - FFT export files
 *.fft
+
+.venv/
+build/
+__pycache__/
+*.pyc
