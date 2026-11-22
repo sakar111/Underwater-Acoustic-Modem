@@ -1,13 +1,13 @@
 # Underwater Acoustic Modem
 
-A two-board (TX/RX) underwater acoustic modem that sends data through water using sound at 20–90 kHz. I designed it end to end: analog front ends, power amplifier, PCBs and firmware.
+A two-board (TX/RX) underwater acoustic modem that sends data through water using sound at 20–90 kHz. The repo covers every layer: analog front ends, power amplifier, PCBs, firmware and a desktop test app.
 
 **Status:** both boards brought up on the bench (power, signal chains, firmware, desktop app). In-water tests next.
 
 <table>
   <tr>
-    <td align="center"><img src="docs/images/tx-altium-3d.png" alt="3D render of the transmitter PCB: Teensy 4.1 in the middle, power converters along the top edge, the bridge power amplifier and the hydrophone terminal on the lower left" width="400"></td>
-    <td align="center"><img src="docs/images/rx-altium-3d.png" alt="3D render of the receiver PCB: Teensy 4.1 in the middle, the hydrophone input and the analog receive chain along the bottom half" width="400"></td>
+    <td align="center"><img src="docs/images/tx-board.jpg" alt="Photo of the assembled transmitter board with a Teensy 4.1 mounted in the middle, power converters along the top and two white film capacitors beside the hydrophone terminal" width="400"></td>
+    <td align="center"><img src="docs/images/rx-board.jpg" alt="Photo of the assembled receiver board with a Teensy 4.1 mounted in the middle, the hydrophone and PA-4 input terminals on the lower left and the analog receive chain along the bottom" width="400"></td>
   </tr>
   <tr>
     <td align="center"><b>Transmitter</b></td>
@@ -17,7 +17,7 @@ A two-board (TX/RX) underwater acoustic modem that sends data through water usin
 
 ## What it is
 
-Radio doesn't travel through water, so underwater links use sound. This project is a low-cost acoustic modem built from two boards, each with its own Teensy 4.1. The transmitter turns digital samples into a high-voltage drive signal for an underwater transducer. The receiver amplifies, filters and digitizes the microvolt-level signal from a hydrophone. I designed the hardware end to end: schematics, simulations and 4-layer PCBs. I also wrote the specifications for the bench firmware and desktop test app and verified both on the hardware. The code itself was written with AI-assisted tooling.
+Radio doesn't travel through water, so underwater links use sound. This project is a low-cost acoustic modem built from two boards, each with its own Teensy 4.1. The transmitter turns digital samples into a high-voltage drive signal for an underwater transducer. The receiver amplifies, filters and digitizes the microvolt-level signal from a hydrophone. The repo includes the schematics, simulations, 4-layer PCB designs, bench firmware, a desktop test app and the bench verification records.
 
 ## Key numbers
 
@@ -76,14 +76,14 @@ The two boards have no electrical connection. They communicate only through the 
 
 ## Hardware
 
-Both boards are 4-layer PCBs designed in Altium. JLCPCB fabricated and assembled them, and I hand-soldered the remaining parts. Schematics: [TX_Board.pdf](Altium%20Projects/TX_Board/TX_Board.pdf), [RX_Board.pdf](Altium%20Projects/RX_Board/RX_Board.pdf).
+Both boards are 4-layer PCBs designed in Altium. They were fabricated and assembled at JLCPCB, with a few parts hand-soldered afterwards. Schematics: [TX_Board.pdf](Altium%20Projects/TX_Board/TX_Board.pdf), [RX_Board.pdf](Altium%20Projects/RX_Board/RX_Board.pdf).
 
 ### Transmitter
 
 <p align="center">
   <img src="docs/images/tx-altium-layout.png" alt="Altium PCB layout of the transmitter board" width="420"><br><br>
-  <img src="docs/images/tx-board.jpg" alt="Photo of the assembled transmitter board with a Teensy 4.1 mounted in the middle, power converters along the top and two white film capacitors beside the hydrophone terminal" width="420"><br>
-  <em>The assembled transmitter board.</em>
+  <img src="docs/images/tx-altium-3d.png" alt="3D render of the transmitter PCB: Teensy 4.1 in the middle, power converters along the top edge, the bridge power amplifier and the hydrophone terminal on the lower left" width="420"><br>
+  <em>Transmitter layout and 3D view (Altium).</em>
 </p>
 
 - **Signal generation:** a Teensy 4.1 timer interrupt drives a 16-bit DAC8830 at 500 kS/s using a 32-bit phase accumulator. It produces tones, bursts and sweeps.
@@ -96,8 +96,8 @@ Both boards are 4-layer PCBs designed in Altium. JLCPCB fabricated and assembled
 
 <p align="center">
   <img src="docs/images/rx-altium-layout.png" alt="Altium PCB layout of the receiver board, with the Teensy 4.1 footprint in the middle and the analog chain below it" width="420"><br><br>
-  <img src="docs/images/rx-board.jpg" alt="Photo of the assembled receiver board with a Teensy 4.1 mounted in the middle, the hydrophone and PA-4 input terminals on the lower left and the analog receive chain along the bottom" width="420"><br>
-  <em>The assembled receiver board.</em>
+  <img src="docs/images/rx-altium-3d.png" alt="3D render of the receiver PCB: Teensy 4.1 in the middle, the hydrophone input and the analog receive chain along the bottom half" width="420"><br>
+  <em>Receiver layout and 3D view (Altium).</em>
 </p>
 
 - **Preamp:** LSK170A JFET low-noise amplifier (≈ ×9, ~1.6 nV/√Hz design estimate) for an Aquarian AS-1 hydrophone. A jumper selects an optional external PA-4 preamp instead.
@@ -129,7 +129,7 @@ The full bench procedures and recorded measurements are in [TX_Board_Verificatio
 
 ## Engineering notes
 
-**Band-pass filter redesign.** The ahoi reference band-pass filter had about 16 dB of passband ripple across 20–90 kHz. I redesigned it as a cascaded high-pass and low-pass, which brought the ripple down to about 4 dB with no added parts. Both versions are in [`LTspice Simulations/Libraries/`](LTspice%20Simulations/Libraries/) (`AHOI_BPF.asc` and `RX_Cascaded_HPF_LPF.asc`).
+**Band-pass filter redesign.** The ahoi reference band-pass filter had about 16 dB of passband ripple across 20–90 kHz. Redesigning it as a cascaded high-pass and low-pass brought the ripple down to about 4 dB with no added parts. Both versions are in [`LTspice Simulations/Libraries/`](LTspice%20Simulations/Libraries/) (`AHOI_BPF.asc` and `RX_Cascaded_HPF_LPF.asc`).
 
 **The 14 MHz oscillation.** At first power-up, the receiver's gain stage oscillated at 13–15 MHz. Resistor R15 sits in series with the op-amp's inverting input to balance bias currents. Its 9.1 kΩ, together with 2–3 pF of input-pin and pad capacitance, formed a pole at about 6–7 MHz inside the feedback loop. The 6.8 pF feedback capacitor keeps the loop's high-frequency gain low, so that pole left no phase margin. LTspice missed it because the model had no pin or pad capacitance. Shorting R15 stopped the oscillation, which confirmed the cause. The permanent fix is a 1 nF capacitor across R15: it removes the pole but keeps R15's DC bias-current balancing.
 
@@ -209,7 +209,7 @@ The firmware tests need `g++` (MSYS2/MinGW), and the app tests need the packages
 ## Acknowledgments
 
 - Dr. Hao Xu and the Autonomous Systems Laboratory, University of Nevada, Reno.
-- The open-source ahoi acoustic modem from Hamburg University of Technology (TUHH). This design started from the ahoi reference design. I changed the following:
+- The open-source ahoi acoustic modem from Hamburg University of Technology (TUHH). This design started from the ahoi reference design, with these changes:
   - separate TX and RX boards and transducers (ahoi shares one)
   - a Teensy 4.1 controller
   - a new LSK170A JFET LNA (the original JFET is obsolete)
@@ -221,6 +221,6 @@ The firmware tests need `g++` (MSYS2/MinGW), and the app tests need the packages
 
 ## Author
 
-**Sakar Pathak**, hardware lead and sole hardware designer. Autonomous Systems Laboratory, University of Nevada, Reno, Fall 2026.
+**Sakar Pathak**, Autonomous Systems Laboratory, University of Nevada, Reno, Fall 2026.
 
 [Portfolio](https://www.pathaksakar.com.np/#uw-modem) · [LinkedIn](https://linkedin.com/in/sakar-pathak)
