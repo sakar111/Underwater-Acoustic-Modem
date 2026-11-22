@@ -45,7 +45,7 @@
     - set the gain safely;
     - capture and save data;
     - measure received level, frequency and the TX→RX acoustic delay.
-- **Later milestones** (design for them, do not build now): demodulation (modulation not decided; ≥ 10 kbit/s target), automatic gain control from a packet preamble, RX digital equalisation.
+- **Later milestones** (design for them, do not build now): demodulation (BPSK; ≥ 10 kbit/s requirement, 25 kbit/s goal), automatic gain control from a packet preamble, RX digital equalisation.
 
 ---
 

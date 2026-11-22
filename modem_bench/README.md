@@ -126,12 +126,13 @@ Protocol, safety logic and behaviour are kept; these were added or fixed:
   shared and tagged `[TX]`/`[RX]`.
 - Calibration factor, sweep helper, QSettings, Help → Bench rules, Esc = Stop, firmware-estimate readback.
 
-## Not yet verified
+## Hardware status and open items
 
-- Neither firmware has been compiled with Teensyduino here (no Teensy toolchain on this PC). Both
-  are checked only against host stubs. Compile them in the Arduino IDE first.
-- Nothing has run on real boards yet. TX: follow TX spec §9.2; watch the ISR timing at 500 kHz
-  with SPI at 20 MHz (TP7 staircase period 2 µs) and that the I2C watchdog gives no false disarms.
+- Both firmwares have been compiled with Teensyduino and run on the real boards (2026-11-17/18).
+  Results are in `TX_Board_Verification_Record.pdf` and `RX_Board_Verification_Record.pdf`.
+- TX: passed Phases 1–2 and the signal-chain checks of Phase 3 (3.1–3.9). Still open: the 50 Vpp
+  headroom run (3.10), bursts / disarm / re-arm (3.11–3.13), the dummy-load and hydrophone phases
+  (4–6). Keep watching the ISR timing at 500 kHz and that the I2C watchdog gives no false disarms.
 - RX: follow RX spec §9.2. The items marked **VERIFY AT BRING-UP** are not settled by the stubs:
   - ~~`ADC_SHIFT`~~ settled on the board (2026-11-18): the first ARM gave `mean=1024` with TP8 = 2.506 V, so the
     shift is **0**, not 1 as the spec assumed. Idle `RAW 8` words ≈ `0x0800`, bits 15..12 = 0;
@@ -140,7 +141,9 @@ Protocol, safety logic and behaviour are kept; these were added or fixed:
     the stub reports exactly 2500 / 1250 ns);
   - SINAD ≥ 55 dB at 400 kSPS;
   - Teensy pin 2 unconnected on the TX PCB before using SYNC (Appendix C).
-- The real-port RX path (`RxSerialLink` over QSerialPort at 800 kB/s) has not been run; the app
-  tests use the in-process fake. `tests/fake_rx.py --port` over a com0com pair exercises it.
+- The real-port RX path (`RxSerialLink` over QSerialPort at 800 kB/s) has streamed from the real RX
+  board (test tone through the full chain), but the 10-minute streaming check (RX record 3.4–3.6) is
+  still open. The automated app tests use the in-process fake; `tests/fake_rx.py --port` over a
+  com0com pair exercises the real-port code without hardware.
 - CPU while streaming, measured offscreen with `--sim`: ≈ 51 % of one core in total, of which the
   in-process fake device is ≈ 15 %, so ≈ 35 % for the app itself; plots ≈ 21 fps.

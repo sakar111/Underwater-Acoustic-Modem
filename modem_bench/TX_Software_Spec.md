@@ -30,7 +30,7 @@
     - **RX board** — receive hydrophone (Aquarian AS-1) → JFET LNA → switchable-gain stage → 20–90 kHz band-pass → AGC (digital pot) → 12-bit ADC → Teensy.
 - There is **no electrical link** between the boards; they communicate acoustically through water.
 - **Operating band: 20–90 kHz.** Use case: short range (0.5 m aquarium tests now; a few to tens of metres later, e.g. near-shore lake).
-- Final data-rate target ≥ 10 kbit/s. **Modulation is not decided yet** (ahoi uses BFSK). This milestone is **bench bring-up**: generate clean test tones and bursts, set the output level safely, and verify every stage with an oscilloscope.
+- Data rate: ≥ 10 kbit/s requirement, 25 kbit/s goal with BPSK (25 kbaud BPSK needs ≈ 25–34 kHz of the 70 kHz band; ahoi uses BFSK). This milestone is **bench bring-up**: generate clean test tones and bursts, set the output level safely, and verify every stage with an oscilloscope.
 - Later milestones (design the code so they fit; do not implement now unless asked): arbitrary waveform/packet playback, chirps, BFSK/OFDM packets, **TX pre-emphasis** (the transducer transmits about 26–28 dB more efficiently at 90 kHz than at 20 kHz, so the drive should eventually be equalised across the band), synchronised TX/RX experiments.
 
 ---
